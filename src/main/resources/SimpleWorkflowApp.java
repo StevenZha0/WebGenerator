@@ -1,4 +1,4 @@
-package com.yupi.yuaicodemother.langgragh4j;
+package com.zy.webgenerator.langgragh4j;
 
 import java.util.Map;
 

@@ -21,7 +21,7 @@ server:
 springdoc:
   group-configs:
     - group: 'default'
-      packages-to-scan: com.yupi.yuaicodemother.controller
+      packages-to-scan: com.zy.webgenerator.controller
 # knife4j
 knife4j:
   enable: true
