@@ -6,7 +6,11 @@
         <a-input v-model:value="searchParams.message" placeholder="输入消息内容" />
       </a-form-item>
       <a-form-item label="消息类型">
-        <a-select v-model:value="searchParams.messageType" placeholder="选择消息类型" style="width: 120px">
+        <a-select
+          v-model:value="searchParams.messageType"
+          placeholder="选择消息类型"
+          style="width: 120px"
+        >
           <a-select-option value="">全部</a-select-option>
           <a-select-option value="user">用户消息</a-select-option>
           <a-select-option value="assistant">AI消息</a-select-option>
@@ -25,8 +29,13 @@
     <a-divider />
 
     <!-- 表格 -->
-    <a-table :columns="columns" :data-source="data" :pagination="pagination" @change="doTableChange"
-      :scroll="{ x: 1400 }">
+    <a-table
+      :columns="columns"
+      :data-source="data"
+      :pagination="pagination"
+      @change="doTableChange"
+      :scroll="{ x: 1400 }"
+    >
       <template #bodyCell="{ column, record }">
         <template v-if="column.dataIndex === 'message'">
           <a-tooltip :title="record.message">
@@ -190,8 +199,12 @@ const deleteMessage = async (id: number | undefined) => {
 <style scoped>
 #chatManagePage {
   padding: 24px;
-  background: white;
-  margin-top: 16px;
+  margin: 24px;
+  background: var(--tech-surface);
+  border: 1px solid var(--tech-border);
+  border-radius: var(--tech-radius-lg);
+  box-shadow: var(--tech-shadow-sm);
+  backdrop-filter: blur(14px);
 }
 
 .message-text {
@@ -203,5 +216,12 @@ const deleteMessage = async (id: number | undefined) => {
 
 :deep(.ant-table-tbody > tr > td) {
   vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  #chatManagePage {
+    margin: 12px;
+    padding: 16px;
+  }
 }
 </style>

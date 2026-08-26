@@ -11,6 +11,13 @@
           <span class="info-label">创建时间：</span>
           <span>{{ formatTime(app?.createTime) }}</span>
         </div>
+        <div class="info-item">
+          <span class="info-label">生成类型：</span>
+          <a-tag v-if="app?.codeGenType" color="blue">
+            {{ formatCodeGenType(app.codeGenType) }}
+          </a-tag>
+          <span v-else>未知类型</span>
+        </div>
       </div>
 
       <!-- 操作栏（仅本人或管理员可见） -->
@@ -46,6 +53,7 @@ import { computed } from 'vue'
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons-vue'
 import UserInfo from './UserInfo.vue'
 import { formatTime } from '@/utils/time'
+import {formatCodeGenType} from "../utils/codeGenTypes.ts";
 
 interface Props {
   open: boolean
@@ -81,11 +89,15 @@ const handleDelete = () => {
 
 <style scoped>
 .app-detail-content {
-  padding: 8px 0;
+  padding: 10px 0 2px;
 }
 
 .app-basic-info {
   margin-bottom: 24px;
+  padding: 16px;
+  background: var(--tech-surface-muted);
+  border: 1px solid var(--tech-border);
+  border-radius: var(--tech-radius-md);
 }
 
 .info-item {
@@ -96,13 +108,13 @@ const handleDelete = () => {
 
 .info-label {
   width: 80px;
-  color: #666;
+  color: var(--tech-text-secondary);
   font-size: 14px;
   flex-shrink: 0;
 }
 
 .app-actions {
   padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--tech-border);
 }
 </style>

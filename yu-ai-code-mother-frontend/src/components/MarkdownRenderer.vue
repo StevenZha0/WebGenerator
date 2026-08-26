@@ -47,7 +47,7 @@ const renderedMarkdown = computed(() => {
 <style scoped>
 .markdown-content {
   line-height: 1.6;
-  color: #333;
+  color: var(--tech-text);
   word-wrap: break-word;
 }
 
@@ -65,13 +65,13 @@ const renderedMarkdown = computed(() => {
 
 .markdown-content :deep(h1) {
   font-size: 1.5em;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--tech-border);
   padding-bottom: 0.3em;
 }
 
 .markdown-content :deep(h2) {
   font-size: 1.3em;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--tech-border);
   padding-bottom: 0.3em;
 }
 
@@ -96,23 +96,24 @@ const renderedMarkdown = computed(() => {
 .markdown-content :deep(blockquote) {
   margin: 1em 0;
   padding: 0.5em 1em;
-  border-left: 4px solid #ddd;
-  background-color: #f9f9f9;
-  color: #666;
+  border-left: 3px solid var(--tech-accent);
+  background-color: var(--tech-accent-soft);
+  color: var(--tech-text-secondary);
 }
 
 .markdown-content :deep(code) {
-  background-color: #f1f1f1;
+  color: #0d5fc4;
+  background-color: rgba(20, 120, 255, 0.08);
   padding: 0.2em 0.4em;
-  border-radius: 3px;
+  border-radius: 5px;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 0.9em;
 }
 
 .markdown-content :deep(pre) {
-  background-color: #f8f8f8;
-  border: 1px solid #e1e1e1;
-  border-radius: 6px;
+  background-color: #f5f8fc;
+  border: 1px solid var(--tech-border);
+  border-radius: var(--tech-radius-sm);
   padding: 1em;
   overflow-x: auto;
   margin: 1em 0;
@@ -134,22 +135,22 @@ const renderedMarkdown = computed(() => {
 
 .markdown-content :deep(table th),
 .markdown-content :deep(table td) {
-  border: 1px solid #ddd;
+  border: 1px solid var(--tech-border);
   padding: 0.5em 0.8em;
   text-align: left;
 }
 
 .markdown-content :deep(table th) {
-  background-color: #f5f5f5;
+  background-color: #edf5fc;
   font-weight: 600;
 }
 
 .markdown-content :deep(table tr:nth-child(even)) {
-  background-color: #f9f9f9;
+  background-color: rgba(20, 120, 255, 0.025);
 }
 
 .markdown-content :deep(a) {
-  color: #1890ff;
+  color: var(--tech-primary);
   text-decoration: none;
 }
 
@@ -160,20 +161,20 @@ const renderedMarkdown = computed(() => {
 .markdown-content :deep(img) {
   max-width: 100%;
   height: auto;
-  border-radius: 4px;
+  border-radius: var(--tech-radius-sm);
   margin: 0.5em 0;
 }
 
 .markdown-content :deep(hr) {
   border: none;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--tech-border);
   margin: 1.5em 0;
 }
 
 /* 代码高亮样式优化 */
 .markdown-content :deep(.hljs) {
-  background-color: #f8f8f8 !important;
-  border-radius: 6px;
+  background-color: #f5f8fc !important;
+  border-radius: var(--tech-radius-sm);
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 0.9em;
   line-height: 1.4;

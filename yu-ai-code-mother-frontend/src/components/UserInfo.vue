@@ -27,8 +27,14 @@ withDefaults(defineProps<Props>(), {
   gap: 8px;
 }
 
+.user-info :deep(.ant-avatar) {
+  border: 1px solid var(--tech-border-strong);
+  box-shadow: var(--tech-shadow-sm);
+}
+
 .user-name {
   font-size: 14px;
-  color: #1a1a1a;
+  color: var(--tech-text);
+  font-weight: 500;
 }
 </style>

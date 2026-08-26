@@ -61,7 +61,7 @@ const router = useRouter()
 // 当前选中菜单
 const selectedKeys = ref<string[]>(['/'])
 // 监听路由变化，更新当前选中菜单
-router.afterEach((to) => {
+router.afterEach((to, from, next) => {
   selectedKeys.value = [to.path]
 })
 
@@ -82,11 +82,6 @@ const originItems = [
     key: '/admin/appManage',
     label: '应用管理',
     title: '应用管理',
-  },
-  {
-    key: 'others',
-    label: h('a', { href: 'https://www.codefather.cn', target: '_blank' }, '编程导航'),
-    title: '编程导航',
   },
 ]
 
@@ -117,7 +112,7 @@ const handleMenuClick: MenuProps['onClick'] = (e) => {
   }
 }
 
-// 用户注销
+// 退出登录
 const doLogout = async () => {
   const res = await userLogout()
   if (res.data.code === 0) {
@@ -136,7 +131,7 @@ const doLogout = async () => {
 .header {
   position: relative;
   z-index: 10;
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   padding: 0 24px;

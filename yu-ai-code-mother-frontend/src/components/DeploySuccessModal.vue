@@ -69,25 +69,36 @@ const handleClose = () => {
 .deploy-success {
   text-align: center;
   padding: 24px;
+  border-radius: var(--tech-radius-lg);
+  background:
+    radial-gradient(circle at 50% 0, rgba(22, 160, 133, 0.1), transparent 44%),
+    var(--tech-surface-solid);
 }
 
 .success-icon {
   margin-bottom: 16px;
+  filter: drop-shadow(0 8px 18px rgba(22, 160, 133, 0.2));
 }
 
 .deploy-success h3 {
   margin: 0 0 16px;
   font-size: 20px;
   font-weight: 600;
+  color: var(--tech-text);
 }
 
 .deploy-success p {
   margin: 0 0 24px;
-  color: #666;
+  color: var(--tech-text-secondary);
 }
 
 .deploy-url {
   margin-bottom: 24px;
+}
+
+.deploy-url :deep(.ant-input-affix-wrapper) {
+  background: var(--tech-surface-muted);
+  border-color: var(--tech-border);
 }
 
 .deploy-actions {

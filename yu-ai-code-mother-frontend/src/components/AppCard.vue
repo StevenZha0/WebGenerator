@@ -62,26 +62,30 @@ const handleViewWork = () => {
 
 <style scoped>
 .app-card {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
+  background: var(--tech-surface);
+  border-radius: var(--tech-radius-lg);
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--tech-shadow-sm);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--tech-border);
   transition:
-    transform 0.3s,
-    box-shadow 0.3s;
+    transform var(--tech-transition),
+    box-shadow var(--tech-transition),
+    border-color var(--tech-transition);
   cursor: pointer;
 }
 
 .app-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+  transform: translateY(-4px);
+  border-color: var(--tech-border-strong);
+  box-shadow: var(--tech-shadow-glow);
 }
 
 .app-preview {
   height: 180px;
-  background: #f5f5f5;
+  background:
+    linear-gradient(135deg, rgba(20, 120, 255, 0.07), rgba(6, 182, 212, 0.1)),
+    var(--tech-surface-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -97,7 +101,8 @@ const handleViewWork = () => {
 
 .app-placeholder {
   font-size: 48px;
-  color: #d9d9d9;
+  color: var(--tech-text-muted);
+  filter: saturate(0.65);
 }
 
 .app-overlay {
@@ -106,12 +111,13 @@ const handleViewWork = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(8, 25, 48, 0.62);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity var(--tech-transition);
 }
 
 .app-card:hover .app-overlay {
@@ -123,6 +129,7 @@ const handleViewWork = () => {
   display: flex;
   align-items: center;
   gap: 12px;
+  border-top: 1px solid rgba(80, 112, 146, 0.08);
 }
 
 .app-info-left {
@@ -138,7 +145,7 @@ const handleViewWork = () => {
   font-size: 16px;
   font-weight: 600;
   margin: 0 0 4px;
-  color: #1a1a1a;
+  color: var(--tech-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -146,7 +153,7 @@ const handleViewWork = () => {
 
 .app-author {
   font-size: 14px;
-  color: #666;
+  color: var(--tech-text-secondary);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;

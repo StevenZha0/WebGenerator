@@ -278,7 +278,7 @@ onMounted(() => {
 #appEditPage {
   padding: 24px;
   max-width: 1000px;
-  margin: 0 auto;
+  margin: 24px auto;
 }
 
 .page-header {
@@ -292,32 +292,44 @@ onMounted(() => {
   margin: 0;
   font-size: 24px;
   font-weight: 600;
+  color: var(--tech-text);
 }
 
 .edit-container {
-  border-radius: 8px;
+  border-radius: var(--tech-radius-lg);
+  border: 1px solid var(--tech-border);
+  box-shadow: var(--tech-shadow-md);
+  overflow: hidden;
 }
 
 .cover-preview {
   margin-top: 12px;
   padding: 12px;
-  border: 1px solid #e8e8e8;
-  border-radius: 6px;
-  background: #fafafa;
+  border: 1px solid var(--tech-border);
+  border-radius: var(--tech-radius-sm);
+  background: var(--tech-surface-muted);
 }
 
 .form-tip {
   font-size: 12px;
-  color: #999;
+  color: var(--tech-text-muted);
   margin-top: 4px;
 }
 
 :deep(.ant-card-head) {
-  background: #fafafa;
+  background: #eef5fc;
+  border-bottom-color: var(--tech-border);
 }
 
 :deep(.ant-descriptions-item-label) {
-  background: #fafafa;
+  background: #eef5fc;
   font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  #appEditPage {
+    padding: 16px;
+    margin: 8px auto;
+  }
 }
 </style>

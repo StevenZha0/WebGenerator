@@ -282,10 +282,9 @@ onMounted(() => {
   padding: 0;
   min-height: 100vh;
   background:
-    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 8%, #e2e8f0 20%, #cbd5e1 100%),
-    radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
+    radial-gradient(circle at 18% 14%, rgba(6, 182, 212, 0.1), transparent 30rem),
+    radial-gradient(circle at 82% 8%, rgba(20, 120, 255, 0.1), transparent 32rem),
+    linear-gradient(180deg, rgba(247, 250, 255, 0.7), rgba(233, 240, 248, 0.78));
   position: relative;
   overflow: hidden;
 }
@@ -299,17 +298,12 @@ onMounted(() => {
   right: 0;
   bottom: 0;
   background-image:
-    linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px),
-    linear-gradient(rgba(139, 92, 246, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(139, 92, 246, 0.04) 1px, transparent 1px);
+    linear-gradient(var(--tech-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--tech-grid) 1px, transparent 1px);
   background-size:
-    100px 100px,
-    100px 100px,
-    20px 20px,
-    20px 20px;
+    40px 40px,
+    40px 40px;
   pointer-events: none;
-  animation: gridFloat 20s ease-in-out infinite;
 }
 
 /* 动态光效 */
@@ -323,14 +317,11 @@ onMounted(() => {
   background:
     radial-gradient(
       600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-      rgba(59, 130, 246, 0.08) 0%,
-      rgba(139, 92, 246, 0.06) 40%,
+      rgba(6, 182, 212, 0.09) 0%,
+      rgba(20, 120, 255, 0.04) 40%,
       transparent 80%
-    ),
-    linear-gradient(45deg, transparent 30%, rgba(59, 130, 246, 0.04) 50%, transparent 70%),
-    linear-gradient(-45deg, transparent 30%, rgba(139, 92, 246, 0.04) 50%, transparent 70%);
+    );
   pointer-events: none;
-  animation: lightPulse 8s ease-in-out infinite alternate;
 }
 
 @keyframes gridFloat {
@@ -369,7 +360,7 @@ onMounted(() => {
   text-align: center;
   padding: 80px 0 60px;
   margin-bottom: 28px;
-  color: #1e293b;
+  color: var(--tech-text);
   position: relative;
   overflow: hidden;
 }
@@ -382,10 +373,7 @@ onMounted(() => {
   right: 0;
   bottom: 0;
   background:
-    radial-gradient(ellipse 800px 400px at center, rgba(59, 130, 246, 0.12) 0%, transparent 70%),
-    linear-gradient(45deg, transparent 30%, rgba(139, 92, 246, 0.05) 50%, transparent 70%),
-    linear-gradient(-45deg, transparent 30%, rgba(16, 185, 129, 0.04) 50%, transparent 70%);
-  animation: heroGlow 10s ease-in-out infinite alternate;
+    radial-gradient(ellipse 760px 360px at center, rgba(20, 120, 255, 0.1), transparent 68%);
 }
 
 @keyframes heroGlow {
@@ -410,17 +398,17 @@ onMounted(() => {
 
 .hero-title {
   font-size: 56px;
-  font-weight: 700;
+  font-weight: 720;
   margin: 0 0 20px;
   line-height: 1.2;
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #10b981 100%);
+  background: linear-gradient(112deg, #0d5fc4 12%, var(--tech-primary) 52%, #079ab4 92%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: -1px;
   position: relative;
   z-index: 2;
-  animation: titleShimmer 3s ease-in-out infinite;
+  text-shadow: 0 12px 34px rgba(20, 120, 255, 0.12);
 }
 
 @keyframes titleShimmer {
@@ -436,8 +424,7 @@ onMounted(() => {
 .hero-description {
   font-size: 20px;
   margin: 0;
-  opacity: 0.8;
-  color: #64748b;
+  color: var(--tech-text-secondary);
   position: relative;
   z-index: 2;
 }
@@ -450,19 +437,19 @@ onMounted(() => {
 }
 
 .prompt-input {
-  border-radius: 16px;
-  border: none;
+  border-radius: var(--tech-radius-lg);
+  border: 1px solid var(--tech-border);
   font-size: 16px;
   padding: 20px 60px 20px 20px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--tech-shadow-md);
 }
 
 .prompt-input:focus {
   background: rgba(255, 255, 255, 1);
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
-  transform: translateY(-2px);
+  border-color: var(--tech-primary);
+  box-shadow: var(--tech-shadow-glow);
 }
 
 .input-actions {
@@ -484,14 +471,14 @@ onMounted(() => {
 }
 
 .quick-actions .ant-btn {
-  border-radius: 25px;
+  border-radius: 999px;
   padding: 8px 20px;
   height: auto;
   background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  color: #475569;
+  border: 1px solid var(--tech-border);
+  color: var(--tech-text-secondary);
   backdrop-filter: blur(15px);
-  transition: all 0.3s;
+  transition: all var(--tech-transition);
   position: relative;
   overflow: hidden;
 }
@@ -503,7 +490,7 @@ onMounted(() => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, var(--tech-accent-soft), transparent);
   transition: left 0.5s;
 }
 
@@ -513,22 +500,28 @@ onMounted(() => {
 
 .quick-actions .ant-btn:hover {
   background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(59, 130, 246, 0.4);
-  color: #3b82f6;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
+  border-color: var(--tech-border-strong);
+  color: var(--tech-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--tech-shadow-sm);
 }
 
 /* 区域标题 */
 .section {
-  margin-bottom: 60px;
+  margin-bottom: 32px;
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid var(--tech-border);
+  border-radius: var(--tech-radius-lg);
+  box-shadow: var(--tech-shadow-sm);
+  backdrop-filter: blur(12px);
 }
 
 .section-title {
   font-size: 32px;
   font-weight: 600;
   margin-bottom: 32px;
-  color: #1e293b;
+  color: var(--tech-text);
 }
 
 /* 我的作品网格 */
@@ -556,6 +549,14 @@ onMounted(() => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .container {
+    padding: 12px;
+  }
+
+  .hero-section {
+    padding: 56px 0 40px;
+  }
+
   .hero-title {
     font-size: 32px;
   }
@@ -571,6 +572,14 @@ onMounted(() => {
 
   .quick-actions {
     justify-content: center;
+  }
+
+  .section {
+    padding: 18px;
+  }
+
+  .section-title {
+    font-size: 26px;
   }
 }
 </style>

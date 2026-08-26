@@ -21,17 +21,25 @@
 
 <style scoped>
 .footer {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
+  background: rgba(247, 250, 255, 0.9);
+  backdrop-filter: blur(16px);
   text-align: center;
   padding: 20px;
   margin-top: 40px;
-  border-top: 1px solid rgba(102, 126, 234, 0.1);
+  border-top: 1px solid var(--tech-border);
 }
 
 .copyright {
   margin: 0;
-  color: #666;
+  color: var(--tech-text-muted);
   font-size: 14px;
+}
+
+.author-link {
+  color: inherit;
+}
+
+.author-link:hover {
+  color: var(--tech-primary);
 }
 </style>

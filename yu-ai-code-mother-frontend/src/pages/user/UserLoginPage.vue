@@ -10,13 +10,13 @@
         name="userPassword"
         :rules="[
           { required: true, message: '请输入密码' },
-          { min: 8, message: '密码不能小于 8 位' },
+          { min: 8, message: '密码长度不能小于 8 位' },
         ]"
       >
         <a-input-password v-model:value="formState.userPassword" placeholder="请输入密码" />
       </a-form-item>
       <div class="tips">
-        没有账号？
+        没有账号
         <RouterLink to="/user/register">去注册</RouterLink>
       </div>
       <a-form-item>
@@ -25,21 +25,20 @@
     </a-form>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useRouter } from 'vue-router'
-import { useLoginUserStore } from '@/stores/loginUser.ts'
-import { userLogin } from '@/api/userController.ts'
-import { message } from 'ant-design-vue'
+<script lang="ts" setup>
 import { reactive } from 'vue'
-
-const router = useRouter()
-const loginUserStore = useLoginUserStore()
+import { userLogin } from '@/api/userController.ts'
+import { useLoginUserStore } from '@/stores/loginUser.ts'
+import { useRouter } from 'vue-router'
+import { message } from 'ant-design-vue'
 
 const formState = reactive<API.UserLoginRequest>({
   userAccount: '',
   userPassword: '',
 })
+
+const router = useRouter()
+const loginUserStore = useLoginUserStore()
 
 /**
  * 提交表单
@@ -63,27 +62,46 @@ const handleSubmit = async (values: any) => {
 
 <style scoped>
 #userLoginPage {
-  background: white;
   max-width: 720px;
-  padding: 24px;
-  margin: 24px auto;
+  padding: 40px;
+  margin: 56px auto;
+  background:
+    linear-gradient(135deg, rgba(20, 120, 255, 0.04), rgba(6, 182, 212, 0.02)),
+    var(--tech-surface);
+  border: 1px solid var(--tech-border);
+  border-radius: var(--tech-radius-lg);
+  box-shadow: var(--tech-shadow-md);
+  backdrop-filter: blur(18px);
 }
 
 .title {
   text-align: center;
   margin-bottom: 16px;
+  color: var(--tech-text);
+  font-weight: 650;
 }
 
 .desc {
   text-align: center;
-  color: #bbb;
-  margin-bottom: 16px;
+  color: var(--tech-text-secondary);
+  margin-bottom: 28px;
 }
 
 .tips {
-  margin-bottom: 16px;
-  color: #bbb;
-  font-size: 13px;
   text-align: right;
+  color: var(--tech-text-muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+  #userLoginPage {
+    margin: 24px 16px;
+    padding: 28px 20px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
 }
 </style>

@@ -4,6 +4,9 @@
     <div class="header-bar">
       <div class="header-left">
         <h1 class="app-name">{{ appInfo?.appName || '网站生成器' }}</h1>
+        <a-tag v-if="appInfo?.codeGenType" color="blue" class="code-gen-type-tag">
+          {{ formatCodeGenType(appInfo.codeGenType) }}
+        </a-tag>
       </div>
       <div class="header-right">
         <a-button type="default" @click="showAppDetail">
@@ -12,11 +15,23 @@
           </template>
           应用详情
         </a-button>
+        <a-button
+            type="primary"
+            ghost
+            @click="downloadCode"
+            :loading="downloading"
+            :disabled="!isOwner"
+        >
+          <template #icon>
+            <DownloadOutlined />
+          </template>
+          下载代码
+        </a-button>
         <a-button type="primary" @click="deployApp" :loading="deploying">
           <template #icon>
             <CloudUploadOutlined />
           </template>
-          部署按钮
+          部署
         </a-button>
       </div>
     </div>
@@ -55,17 +70,73 @@
           </div>
         </div>
 
+        <!-- 选中元素信息展示 -->
+        <a-alert
+            v-if="selectedElementInfo"
+            class="selected-element-alert"
+            type="info"
+            closable
+            @close="clearSelectedElement"
+        >
+          <template #message>
+            <div class="selected-element-info">
+              <div class="element-header">
+                <span class="element-tag">
+                  选中元素：{{ selectedElementInfo.tagName.toLowerCase() }}
+                </span>
+                <span v-if="selectedElementInfo.id" class="element-id">
+                  #{{ selectedElementInfo.id }}
+                </span>
+                <span v-if="selectedElementInfo.className" class="element-class">
+                  .{{ selectedElementInfo.className.split(' ').join('.') }}
+                </span>
+              </div>
+              <div class="element-details">
+                <div v-if="selectedElementInfo.textContent" class="element-item">
+                  内容: {{ selectedElementInfo.textContent.substring(0, 50) }}
+                  {{ selectedElementInfo.textContent.length > 50 ? '...' : '' }}
+                </div>
+                <div v-if="selectedElementInfo.pagePath" class="element-item">
+                  页面路径: {{ selectedElementInfo.pagePath }}
+                </div>
+                <div class="element-item">
+                  选择器:
+                  <code class="element-selector-code">{{ selectedElementInfo.selector }}</code>
+                </div>
+              </div>
+            </div>
+          </template>
+        </a-alert>
+
         <!-- 用户消息输入框 -->
         <div class="input-container">
           <div class="input-wrapper">
             <a-tooltip v-if="!isOwner" title="无法在别人的作品下对话哦~" placement="top">
-              <a-textarea v-model:value="userInput" placeholder="请描述你想生成的网站，越详细效果越好哦" :rows="4" :maxlength="1000"
-                @keydown.enter.prevent="sendMessage" :disabled="isGenerating || !isOwner" />
+              <a-textarea
+                  v-model:value="userInput"
+                  :placeholder="getInputPlaceholder()"
+                  :rows="4"
+                  :maxlength="1000"
+                  @keydown.enter.prevent="sendMessage"
+                  :disabled="isGenerating || !isOwner"
+              />
             </a-tooltip>
-            <a-textarea v-else v-model:value="userInput" placeholder="请描述你想生成的网站，越详细效果越好哦" :rows="4" :maxlength="1000"
-              @keydown.enter.prevent="sendMessage" :disabled="isGenerating" />
+            <a-textarea
+                v-else
+                v-model:value="userInput"
+                :placeholder="getInputPlaceholder()"
+                :rows="4"
+                :maxlength="1000"
+                @keydown.enter.prevent="sendMessage"
+                :disabled="isGenerating"
+            />
             <div class="input-actions">
-              <a-button type="primary" @click="sendMessage" :loading="isGenerating" :disabled="!isOwner">
+              <a-button
+                  type="primary"
+                  @click="sendMessage"
+                  :loading="isGenerating"
+                  :disabled="!isOwner"
+              >
                 <template #icon>
                   <SendOutlined />
                 </template>
@@ -79,6 +150,19 @@
         <div class="preview-header">
           <h3>生成后的网页展示</h3>
           <div class="preview-actions">
+            <a-button
+                v-if="isOwner && previewUrl"
+                type="link"
+                :danger="isEditMode"
+                @click="toggleEditMode"
+                :class="{ 'edit-mode-active': isEditMode }"
+                style="padding: 0; height: auto; margin-right: 12px"
+            >
+              <template #icon>
+                <EditOutlined />
+              </template>
+              {{ isEditMode ? '退出编辑' : '编辑模式' }}
+            </a-button>
             <a-button v-if="previewUrl" type="link" @click="openInNewTab">
               <template #icon>
                 <ExportOutlined />
@@ -96,17 +180,32 @@
             <a-spin size="large" />
             <p>正在生成网站...</p>
           </div>
-          <iframe v-else :src="previewUrl" class="preview-iframe" frameborder="0" @load="onIframeLoad"></iframe>
+          <iframe
+              v-else
+              :src="previewUrl"
+              class="preview-iframe"
+              frameborder="0"
+              @load="onIframeLoad"
+          ></iframe>
         </div>
       </div>
     </div>
 
     <!-- 应用详情弹窗 -->
-    <AppDetailModal v-model:open="appDetailVisible" :app="appInfo" :show-actions="isOwner || isAdmin" @edit="editApp"
-      @delete="deleteApp" />
+    <AppDetailModal
+        v-model:open="appDetailVisible"
+        :app="appInfo"
+        :show-actions="isOwner || isAdmin"
+        @edit="editApp"
+        @delete="deleteApp"
+    />
 
     <!-- 部署成功弹窗 -->
-    <DeploySuccessModal v-model:open="deployModalVisible" :deploy-url="deployUrl" @open-site="openDeployedSite" />
+    <DeploySuccessModal
+        v-model:open="deployModalVisible"
+        :deploy-url="deployUrl"
+        @open-site="openDeployedSite"
+    />
   </div>
 </template>
 
@@ -121,21 +220,24 @@ import {
   deleteApp as deleteAppApi,
 } from '@/api/appController'
 import { listAppChatHistory } from '@/api/chatHistoryController'
-import { CodeGenTypeEnum } from '@/utils/codeGenTypes'
+import { CodeGenTypeEnum, formatCodeGenType } from '@/utils/codeGenTypes'
 import request from '@/request'
-import { DEFAULT_USER_AVATAR } from '@/constants/user'
 
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import AppDetailModal from '@/components/AppDetailModal.vue'
 import DeploySuccessModal from '@/components/DeploySuccessModal.vue'
 import aiAvatar from '@/assets/aiAvatar.png'
 import { API_BASE_URL, getStaticPreviewUrl } from '@/config/env'
+import { VisualEditor, type ElementInfo } from '@/utils/visualEditor'
+import { DEFAULT_USER_AVATAR } from '@/constants/user'
 
 import {
   CloudUploadOutlined,
   SendOutlined,
   ExportOutlined,
   InfoCircleOutlined,
+  DownloadOutlined,
+  EditOutlined,
 } from '@ant-design/icons-vue'
 
 const route = useRoute()
@@ -174,6 +276,18 @@ const deploying = ref(false)
 const deployModalVisible = ref(false)
 const deployUrl = ref('')
 
+// 下载相关
+const downloading = ref(false)
+
+// 可视化编辑相关
+const isEditMode = ref(false)
+const selectedElementInfo = ref<ElementInfo | null>(null)
+const visualEditor = new VisualEditor({
+  onElementSelected: (elementInfo: ElementInfo) => {
+    selectedElementInfo.value = elementInfo
+  },
+})
+
 // 权限相关
 const isOwner = computed(() => {
   return appInfo.value?.userId === loginUserStore.loginUser.id
@@ -210,12 +324,12 @@ const loadChatHistory = async (isLoadMore = false) => {
       if (chatHistories.length > 0) {
         // 将对话历史转换为消息格式，并按时间正序排列（老消息在前）
         const historyMessages: Message[] = chatHistories
-          .map((chat) => ({
-            type: (chat.messageType === 'user' ? 'user' : 'ai') as 'user' | 'ai',
-            content: chat.message || '',
-            createTime: chat.createTime,
-          }))
-          .reverse() // 反转数组，让老消息在前
+            .map((chat) => ({
+              type: (chat.messageType === 'user' ? 'user' : 'ai') as 'user' | 'ai',
+              content: chat.message || '',
+              createTime: chat.createTime,
+            }))
+            .reverse() // 反转数组，让老消息在前
         if (isLoadMore) {
           // 加载更多时，将历史消息添加到开头
           messages.value.unshift(...historyMessages)
@@ -270,10 +384,10 @@ const fetchAppInfo = async () => {
       // 检查是否需要自动发送初始提示词
       // 只有在是自己的应用且没有对话历史时才自动发送
       if (
-        appInfo.value.initPrompt &&
-        isOwner.value &&
-        messages.value.length === 0 &&
-        historyLoaded.value
+          appInfo.value.initPrompt &&
+          isOwner.value &&
+          messages.value.length === 0 &&
+          historyLoaded.value
       ) {
         await sendInitialMessage(appInfo.value.initPrompt)
       }
@@ -318,14 +432,33 @@ const sendMessage = async () => {
     return
   }
 
-  const message = userInput.value.trim()
+  let message = userInput.value.trim()
+  // 如果有选中的元素，将元素信息添加到提示词中
+  if (selectedElementInfo.value) {
+    let elementContext = `\n\n选中元素信息：`
+    if (selectedElementInfo.value.pagePath) {
+      elementContext += `\n- 页面路径: ${selectedElementInfo.value.pagePath}`
+    }
+    elementContext += `\n- 标签: ${selectedElementInfo.value.tagName.toLowerCase()}\n- 选择器: ${selectedElementInfo.value.selector}`
+    if (selectedElementInfo.value.textContent) {
+      elementContext += `\n- 当前内容: ${selectedElementInfo.value.textContent.substring(0, 100)}`
+    }
+    message += elementContext
+  }
   userInput.value = ''
-
-  // 添加用户消息
+  // 添加用户消息（包含元素信息）
   messages.value.push({
     type: 'user',
     content: message,
   })
+
+  // 发送消息后，清除选中元素并退出编辑模式
+  if (selectedElementInfo.value) {
+    clearSelectedElement()
+    if (isEditMode.value) {
+      toggleEditMode()
+    }
+  }
 
   // 添加AI消息占位符
   const aiMessageIndex = messages.value.length
@@ -404,6 +537,29 @@ const generateCode = async (userMessage: string, aiMessageIndex: number) => {
       }, 1000)
     })
 
+    // 处理business-error事件（后端限流等错误）
+    eventSource.addEventListener('business-error', function (event: MessageEvent) {
+      if (streamCompleted) return
+
+      try {
+        const errorData = JSON.parse(event.data)
+        console.error('SSE业务错误事件:', errorData)
+
+        // 显示具体的错误信息
+        const errorMessage = errorData.message || '生成过程中出现错误'
+        messages.value[aiMessageIndex].content = `❌ ${errorMessage}`
+        messages.value[aiMessageIndex].loading = false
+        message.error(errorMessage)
+
+        streamCompleted = true
+        isGenerating.value = false
+        eventSource?.close()
+      } catch (parseError) {
+        console.error('解析错误事件失败:', parseError, '原始数据:', event.data)
+        handleError(new Error('服务器返回错误'), aiMessageIndex)
+      }
+    })
+
     // 处理错误
     eventSource.onerror = function () {
       if (streamCompleted || !isGenerating.value) return
@@ -453,6 +609,44 @@ const scrollToBottom = () => {
   }
 }
 
+// 下载代码
+const downloadCode = async () => {
+  if (!appId.value) {
+    message.error('应用ID不存在')
+    return
+  }
+  downloading.value = true
+  try {
+    const API_BASE_URL = request.defaults.baseURL || ''
+    const url = `${API_BASE_URL}/app/download/${appId.value}`
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+    })
+    if (!response.ok) {
+      throw new Error(`下载失败: ${response.status}`)
+    }
+    // 获取文件名
+    const contentDisposition = response.headers.get('Content-Disposition')
+    const fileName = contentDisposition?.match(/filename="(.+)"/)?.[1] || `app-${appId.value}.zip`
+    // 下载文件
+    const blob = await response.blob()
+    const downloadUrl = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = downloadUrl
+    link.download = fileName
+    link.click()
+    // 清理
+    URL.revokeObjectURL(downloadUrl)
+    message.success('代码下载成功')
+  } catch (error) {
+    console.error('下载失败：', error)
+    message.error('下载失败，请重试')
+  } finally {
+    downloading.value = false
+  }
+}
+
 // 部署应用
 const deployApp = async () => {
   if (!appId.value) {
@@ -498,6 +692,11 @@ const openDeployedSite = () => {
 // iframe加载完成
 const onIframeLoad = () => {
   previewReady.value = true
+  const iframe = document.querySelector('.preview-iframe') as HTMLIFrameElement
+  if (iframe) {
+    visualEditor.init(iframe)
+    visualEditor.onIframeLoad()
+  }
 }
 
 // 编辑应用
@@ -526,9 +725,43 @@ const deleteApp = async () => {
   }
 }
 
+// 可视化编辑相关函数
+const toggleEditMode = () => {
+  // 检查 iframe 是否已经加载
+  const iframe = document.querySelector('.preview-iframe') as HTMLIFrameElement
+  if (!iframe) {
+    message.warning('请等待页面加载完成')
+    return
+  }
+  // 确保 visualEditor 已初始化
+  if (!previewReady.value) {
+    message.warning('请等待页面加载完成')
+    return
+  }
+  const newEditMode = visualEditor.toggleEditMode()
+  isEditMode.value = newEditMode
+}
+
+const clearSelectedElement = () => {
+  selectedElementInfo.value = null
+  visualEditor.clearSelection()
+}
+
+const getInputPlaceholder = () => {
+  if (selectedElementInfo.value) {
+    return `正在编辑 ${selectedElementInfo.value.tagName.toLowerCase()} 元素，描述您想要的修改...`
+  }
+  return '请描述你想生成的网站，越详细效果越好哦'
+}
+
 // 页面加载时获取应用信息
 onMounted(() => {
   fetchAppInfo()
+
+  // 监听 iframe 消息
+  window.addEventListener('message', (event) => {
+    visualEditor.handleIframeMessage(event)
+  })
 })
 
 // 清理资源
@@ -543,7 +776,9 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   padding: 16px;
-  background: #fdfdfd;
+  background:
+    radial-gradient(circle at 75% 0, rgba(20, 120, 255, 0.08), transparent 34rem),
+    rgba(243, 247, 252, 0.72);
 }
 
 /* 顶部栏 */
@@ -552,6 +787,10 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
+  background: var(--tech-surface);
+  border: 1px solid var(--tech-border);
+  border-radius: var(--tech-radius-md);
+  box-shadow: var(--tech-shadow-sm);
 }
 
 .header-left {
@@ -560,11 +799,15 @@ onUnmounted(() => {
   gap: 12px;
 }
 
+.code-gen-type-tag {
+  font-size: 12px;
+}
+
 .app-name {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--tech-text);
 }
 
 .header-right {
@@ -586,14 +829,16 @@ onUnmounted(() => {
   flex: 2;
   display: flex;
   flex-direction: column;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--tech-surface);
+  border: 1px solid var(--tech-border);
+  border-radius: var(--tech-radius-md);
+  box-shadow: var(--tech-shadow-sm);
+  backdrop-filter: blur(14px);
   overflow: hidden;
 }
 
 .messages-container {
-  flex: 1;
+  flex: 0.9;
   padding: 16px;
   overflow-y: auto;
   scroll-behavior: smooth;
@@ -626,13 +871,15 @@ onUnmounted(() => {
 }
 
 .user-message .message-content {
-  background: #1890ff;
+  background: linear-gradient(135deg, var(--tech-primary), #0d69d5);
   color: white;
+  box-shadow: 0 6px 16px rgba(20, 120, 255, 0.16);
 }
 
 .ai-message .message-content {
-  background: #f5f5f5;
-  color: #1a1a1a;
+  background: var(--tech-surface-muted);
+  color: var(--tech-text);
+  border: 1px solid var(--tech-border);
   padding: 8px 12px;
 }
 
@@ -644,7 +891,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #666;
+  color: var(--tech-text-secondary);
 }
 
 /* 加载更多按钮 */
@@ -657,7 +904,8 @@ onUnmounted(() => {
 /* 输入区域 */
 .input-container {
   padding: 16px;
-  background: white;
+  background: rgba(255, 255, 255, 0.76);
+  border-top: 1px solid var(--tech-border);
 }
 
 .input-wrapper {
@@ -679,9 +927,11 @@ onUnmounted(() => {
   flex: 3;
   display: flex;
   flex-direction: column;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--tech-surface);
+  border: 1px solid var(--tech-border);
+  border-radius: var(--tech-radius-md);
+  box-shadow: var(--tech-shadow-sm);
+  backdrop-filter: blur(14px);
   overflow: hidden;
 }
 
@@ -690,13 +940,15 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid #e8e8e8;
+  background: rgba(247, 250, 255, 0.84);
+  border-bottom: 1px solid var(--tech-border);
 }
 
 .preview-header h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
+  color: var(--tech-text);
 }
 
 .preview-actions {
@@ -716,7 +968,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #666;
+  color: var(--tech-text-secondary);
 }
 
 .placeholder-icon {
@@ -730,7 +982,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #666;
+  color: var(--tech-text-secondary);
 }
 
 .preview-loading p {
@@ -741,6 +993,10 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   border: none;
+}
+
+.selected-element-alert {
+  margin: 0 16px;
 }
 
 /* 响应式设计 */
@@ -772,6 +1028,71 @@ onUnmounted(() => {
 
   .message-content {
     max-width: 85%;
+  }
+
+  /* 选中元素信息样式 */
+  .selected-element-alert {
+    margin: 0 16px;
+  }
+
+  .selected-element-info {
+    line-height: 1.4;
+  }
+
+  .element-header {
+    margin-bottom: 8px;
+  }
+
+  .element-details {
+    margin-top: 8px;
+  }
+
+  .element-item {
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+
+  .element-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .element-tag {
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tech-primary);
+  }
+
+  .element-id {
+    color: var(--tech-success);
+    margin-left: 4px;
+  }
+
+  .element-class {
+    color: var(--tech-warning);
+    margin-left: 4px;
+  }
+
+  .element-selector-code {
+    font-family: 'Monaco', 'Menlo', monospace;
+    background: var(--tech-surface-muted);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: var(--tech-danger);
+    border: 1px solid var(--tech-border);
+  }
+
+  /* 编辑模式按钮样式 */
+  .edit-mode-active {
+    background-color: var(--tech-success) !important;
+    border-color: var(--tech-success) !important;
+    color: white !important;
+  }
+
+  .edit-mode-active:hover {
+    background-color: #12836e !important;
+    border-color: #12836e !important;
   }
 }
 </style>
