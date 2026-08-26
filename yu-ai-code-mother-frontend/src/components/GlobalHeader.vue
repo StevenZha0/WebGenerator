@@ -1,104 +1,199 @@
+<template>
+  <a-layout-header class="header">
+    <a-row :wrap="false">
+      <!-- 左侧：Logo和标题 -->
+      <a-col flex="200px">
+        <RouterLink to="/">
+          <div class="header-left">
+            <img class="logo" src="@/assets/logo.png" alt="Logo" />
+            <h1 class="site-title">AI智能网站生成助手</h1>
+          </div>
+        </RouterLink>
+      </a-col>
+      <!-- 中间：导航菜单 -->
+      <a-col flex="auto">
+        <a-menu
+          v-model:selectedKeys="selectedKeys"
+          mode="horizontal"
+          :items="menuItems"
+          @click="handleMenuClick"
+        />
+      </a-col>
+      <!-- 右侧：用户操作区域 -->
+      <a-col>
+        <div class="user-login-status">
+          <div v-if="loginUserStore.loginUser.id">
+            <a-dropdown>
+              <a-space>
+                <a-avatar :src="loginUserStore.loginUser.userAvatar || DEFAULT_USER_AVATAR" />
+                {{ getUserDisplayName(loginUserStore.loginUser.userName) }}
+              </a-space>
+              <template #overlay>
+                <a-menu>
+                  <a-menu-item @click="doLogout">
+                    <LogoutOutlined />
+                    退出登录
+                  </a-menu-item>
+                </a-menu>
+              </template>
+            </a-dropdown>
+          </div>
+          <div v-else>
+            <a-button type="primary" href="/user/login">登录</a-button>
+          </div>
+        </div>
+      </a-col>
+    </a-row>
+  </a-layout-header>
+</template>
+
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import logoPng from '@/assets/logo.png'
+import { computed, h, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { type MenuProps, message } from 'ant-design-vue'
+import { useLoginUserStore } from '@/stores/loginUser.ts'
+import { userLogout } from '@/api/userController.ts'
+import { DEFAULT_USER_AVATAR, getUserDisplayName } from '@/constants/user'
+import { LogoutOutlined, HomeOutlined } from '@ant-design/icons-vue'
 
-type MenuItem = {
-  key: string
-  label: string
-}
+const loginUserStore = useLoginUserStore()
+const router = useRouter()
+// 当前选中菜单
+const selectedKeys = ref<string[]>(['/'])
+// 监听路由变化，更新当前选中菜单
+router.afterEach((to) => {
+  selectedKeys.value = [to.path]
+})
 
-const menuItems: MenuItem[] = [
-  { key: '/', label: '首页' },
-  { key: '/about', label: '关于' },
+// 菜单配置项
+const originItems = [
+  {
+    key: '/',
+    icon: () => h(HomeOutlined),
+    label: '主页',
+    title: '主页',
+  },
+  {
+    key: '/admin/userManage',
+    label: '用户管理',
+    title: '用户管理',
+  },
+  {
+    key: '/admin/appManage',
+    label: '应用管理',
+    title: '应用管理',
+  },
+  {
+    key: 'others',
+    label: h('a', { href: 'https://www.codefather.cn', target: '_blank' }, '编程导航'),
+    title: '编程导航',
+  },
 ]
 
-const route = useRoute()
-const router = useRouter()
-const logoSrc = ref(logoPng)
+// 过滤菜单项
+const filterMenus = (menus = [] as MenuProps['items']) => {
+  return menus?.filter((menu) => {
+    const menuKey = menu?.key as string
+    if (menuKey?.startsWith('/admin')) {
+      const loginUser = loginUserStore.loginUser
+      if (!loginUser || loginUser.userRole !== 'admin') {
+        return false
+      }
+    }
+    return true
+  })
+}
 
-const selectedKey = computed(() => route.path)
+// 展示在菜单的路由数组
+const menuItems = computed<MenuProps['items']>(() => filterMenus(originItems))
 
-const onMenuClick = ({ key }: { key: string }) => {
-  if (key !== route.path) {
-    void router.push(key)
+// 处理菜单点击
+const handleMenuClick: MenuProps['onClick'] = (e) => {
+  const key = e.key as string
+  selectedKeys.value = [key]
+  // 跳转到对应页面
+  if (key.startsWith('/')) {
+    router.push(key)
+  }
+}
+
+// 用户注销
+const doLogout = async () => {
+  const res = await userLogout()
+  if (res.data.code === 0) {
+    loginUserStore.setLoginUser({
+      userName: '未登录',
+    })
+    message.success('退出登录成功')
+    await router.push('/user/login')
+  } else {
+    message.error('退出登录失败，' + res.data.message)
   }
 }
 </script>
 
-<template>
-  <div class="global-header">
-    <div class="global-header__brand">
-      <img :src="logoSrc" alt="logo" class="global-header__logo" />
-      <span class="global-header__title">编程导航</span>
-    </div>
-
-    <a-menu
-      mode="horizontal"
-      :items="menuItems"
-      :selected-keys="[selectedKey]"
-      class="global-header__menu"
-      @click="onMenuClick"
-    />
-
-    <div class="global-header__user">
-      <a-button type="primary">登录</a-button>
-    </div>
-  </div>
-</template>
-
 <style scoped>
-.global-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  max-width: 1200px;
-  min-height: 64px;
-  margin: 0 auto;
-  padding: 0 16px;
+.header {
+  position: relative;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  padding: 0 24px;
+  border-bottom: 1px solid var(--tech-border);
+  box-shadow: 0 6px 22px rgba(35, 65, 98, 0.06);
 }
 
-.global-header__brand {
+.header-left {
   display: flex;
-  flex: 0 0 auto;
   align-items: center;
+  height: 64px;
   gap: 8px;
 }
 
-.global-header__logo {
+.logo {
   width: 32px;
   height: 32px;
-  object-fit: cover;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  box-shadow: 0 5px 14px rgba(20, 120, 255, 0.2);
 }
 
-.global-header__title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1f1f1f;
+.site-title {
+  margin: 0;
+  color: var(--tech-text);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.35px;
   white-space: nowrap;
 }
 
-.global-header__menu {
-  flex: 1 1 auto;
-  min-width: 0;
-  justify-content: center;
-  border-bottom: none;
+.header :deep(.ant-menu) {
+  color: var(--tech-text-secondary);
   background: transparent;
 }
 
-.global-header__user {
-  flex: 0 0 auto;
+.header :deep(.ant-menu-item-selected) {
+  font-weight: 600;
+}
+
+.header :deep(.ant-menu-horizontal) {
+  border-bottom: none !important;
+}
+
+.header :deep(.ant-avatar) {
+  border: 1px solid var(--tech-border-strong);
+  box-shadow: var(--tech-shadow-sm);
 }
 
 @media (max-width: 768px) {
-  .global-header {
+  .header {
     padding: 0 12px;
   }
 
-  .global-header__title {
-    display: none;
+  .site-title {
+    font-size: 13px;
   }
 }
 </style>

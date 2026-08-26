@@ -7,7 +7,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.yupi.yuaicodemother.exception.BusinessException;
 import com.yupi.yuaicodemother.exception.ErrorCode;
-import com.yupi.yuaicodemother.model.dto.UserQueryRequest;
+import com.yupi.yuaicodemother.model.dto.user.UserQueryRequest;
 import com.yupi.yuaicodemother.model.vo.LoginUserVO;
 import com.yupi.yuaicodemother.model.entity.User;
 import com.yupi.yuaicodemother.mapper.UserMapper;
@@ -33,6 +33,10 @@ import static com.yupi.yuaicodemother.constant.UserConstant.USER_LOGIN_STATE;
  */
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements UserService{
+
+    private static final String DEFAULT_USER_NAME = "匿名用户";
+
+    private static final String DEFAULT_USER_AVATAR = "/default-anonymous-avatar.png";
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -62,7 +66,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
         User user = new User();
         user.setUserAccount(userAccount);
         user.setUserPassword(encrptPassword);
-        user.setUserName("无名");
+        user.setUserName(DEFAULT_USER_NAME);
+        user.setUserAvatar(DEFAULT_USER_AVATAR);
         user.setUserRole(UserRoleEnum.USER.getValue());
         boolean saveResult = this.save(user);
         if (!saveResult) {
@@ -85,6 +90,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
         }
         LoginUserVO loginUserVO = new LoginUserVO();
         BeanUtils.copyProperties(user,loginUserVO);
+        if (StrUtil.isBlank(loginUserVO.getUserName()) || "无名".equals(loginUserVO.getUserName())) {
+            loginUserVO.setUserName(DEFAULT_USER_NAME);
+        }
+        if (StrUtil.isBlank(loginUserVO.getUserAvatar())) {
+            loginUserVO.setUserAvatar(DEFAULT_USER_AVATAR);
+        }
         return loginUserVO;
     }
 
@@ -95,6 +106,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
         }
         UserVO userVO = new UserVO();
         BeanUtil.copyProperties(user, userVO);
+        if (StrUtil.isBlank(userVO.getUserName()) || "无名".equals(userVO.getUserName())) {
+            userVO.setUserName(DEFAULT_USER_NAME);
+        }
+        if (StrUtil.isBlank(userVO.getUserAvatar())) {
+            userVO.setUserAvatar(DEFAULT_USER_AVATAR);
+        }
         return userVO;
     }
 
