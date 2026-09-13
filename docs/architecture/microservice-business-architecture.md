@@ -67,11 +67,38 @@ flowchart LR
 - 生成链路：前端调用应用服务，应用服务读取 Session、校验应用权限、调用 AI 模型并通过 SSE 返回结果，同时写入对话历史和本地代码目录。
 - 部署链路：应用服务构建并复制发布产物，随后在虚拟线程中通过 Dubbo 调用截图服务；截图服务上传封面到 COS，应用服务再把封面 URL 写回 MySQL。
 
+## 数据目录约定
+
+单体服务和微服务的启动工作目录不同（仓库根目录 / `microservice` 目录），因此生成目录和部署目录都不直接用 `user.dir` 拼接，而是由 `ProjectPathUtils` 从工作目录逐级向上定位仓库根（标记：同时存在 `pom.xml` 和 `microservice/pom.xml`），保证两种启动方式读写同一份数据：
+
+| 目录 | 取值 | 说明 |
+|------|------|------|
+| 生成目录 `AppConstant.CODE_OUTPUT_ROOT_DIR` | `<仓库根>/tmp/code_output` | 生成的源码、Vue 构建产物 |
+| 部署目录 `AppConstant.CODE_DEPLOY_ROOT_DIR` | `<仓库根>/tmp/code_deploy` | **必须和 nginx 容器挂载的宿主机目录完全一致** |
+
+目录不一致时的表现：部署接口返回成功、数据库也写入了 deployKey，但访问部署地址时 nginx 找不到该目录，返回 `404 Not Found`。
+
+需要改成其他目录时（优先级从高到低，均会覆盖自动定位的结果）：
+
+1. 环境变量 `CODE_DEPLOY_DIR` / `CODE_OUTPUT_DIR`
+2. 启动参数 `-Dcode.deploy.dir` / `-Dcode.output.dir`
+3. `microservice/app/src/main/resources/application.yml` 中的 `code.deploy-dir`
+
+也可以反过来让 nginx 挂载同一个目录：
+
+```bash
+docker run -d -p 80:80 -v /your/path/tmp/code_deploy:/usr/share/nginx/html nginx
+```
+
+应用服务启动时会打印实际使用的生成目录和部署目录，每次部署成功时也会打印一次，便于确认两种启动方式是否指向同一目录。
+
 ## 代码依据
 
 - `microservice/pom.xml`
 - `microservice/app/src/main/java/com/zy/webgenerator/WebGeneratorAppApplication.java`
 - `microservice/app/src/main/java/com/zy/webgenerator/service/impl/AppServiceImpl.java`
+- `microservice/app/src/main/resources/application.yml`
+- `microservice/common/src/main/java/com/zy/webgenerator/utils/ProjectPathUtils.java`
 - `microservice/user/src/main/java/com/zy/webgenerator/WebGeneratorUserApplication.java`
 - `microservice/user/src/main/java/com/zy/webgenerator/service/impl/InnerUserServiceImpl.java`
 - `microservice/screenshot/src/main/java/com/zy/webgenerator/WebGeneratorScreenshotApplication.java`

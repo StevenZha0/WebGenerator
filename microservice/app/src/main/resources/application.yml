@@ -27,6 +27,16 @@ server:
     session:
       cookie:
         max-age: 2592000
+# 应用部署配置
+code:
+  # 部署应用的访问域名（对应 nginx 地址）
+  deploy-host: http://localhost
+  # 部署目录默认无需配置：会自动定位到仓库根目录下的 tmp/code_deploy，
+  # 单体服务和微服务两种启动方式都会落到同一个目录（见 ProjectPathUtils）
+  # 需要改成其他目录时，任选一种方式覆盖（注意必须和 nginx 容器挂载的目录一致）：
+  #   1. 环境变量 CODE_DEPLOY_DIR
+  #   2. 启动参数 -Dcode.deploy.dir
+  #   3. 在本文件配置 code.deploy-dir
 # AI
 langchain4j:
   open-ai:

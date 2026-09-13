@@ -84,10 +84,15 @@ flowchart LR
 - 部署应用：应用服务按生成类型读取源码；Vue 项目先执行构建，再把产物复制到部署目录，并异步生成截图上传到 COS。
 - 查询管理：用户、应用和对话历史统一通过单体接口层访问 MySQL；Redis 同时承担 Session、AI 对话记忆、缓存和限流状态。
 
+## 数据目录约定
+
+生成目录和部署目录统一由 `ProjectPathUtils` 从工作目录逐级向上定位仓库根，因此无论以单体还是微服务方式启动，都固定落在 `<仓库根>/tmp/code_output` 和 `<仓库根>/tmp/code_deploy`。部署目录必须和 nginx 容器挂载的目录一致，否则部署后访问会 404；可通过环境变量 `CODE_OUTPUT_DIR` / `CODE_DEPLOY_DIR` 或启动参数 `-Dcode.output.dir` / `-Dcode.deploy.dir` 覆盖。详见[微服务架构说明](microservice-business-architecture.md#数据目录约定)。
+
 ## 代码依据
 
 - `src/main/java/com/zy/webgenerator/controller`
 - `src/main/java/com/zy/webgenerator/service/impl/AppServiceImpl.java`
+- `src/main/java/com/zy/webgenerator/utils/ProjectPathUtils.java`
 - `src/main/java/com/zy/webgenerator/core/AiCodeGeneratorFacade.java`
 - `src/main/java/com/zy/webgenerator/ai/AiCodeGeneratorServiceFactory.java`
 - `src/main/java/com/zy/webgenerator/core/handler/StreamHandlerExecutor.java`

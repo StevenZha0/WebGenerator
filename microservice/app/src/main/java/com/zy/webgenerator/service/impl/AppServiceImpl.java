@@ -29,6 +29,7 @@ import com.zy.webgenerator.model.vo.AppVO;
 import com.zy.webgenerator.model.vo.UserVO;
 import com.zy.webgenerator.service.AppService;
 import com.zy.webgenerator.service.ChatHistoryService;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -58,6 +59,13 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
     @Value("${code.deploy-host:http://localhost}")
     private String deployHost;
 
+    /**
+     * 应用部署根目录，必须和 nginx 容器挂载的目录保持一致，否则访问部署地址会报 404
+     * 不配置时由 AppConstant 自动定位到仓库根目录下的 tmp/code_deploy
+     */
+    @Value("${code.deploy-dir:}")
+    private String deployDir;
+
     @DubboReference
     private InnerUserService userService;
 
@@ -78,6 +86,15 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
 
     @Resource
     private AiCodeGenTypeRoutingServiceFactory aiCodeGenTypeRoutingServiceFactory;
+
+    /**
+     * 启动时打印生成目录和部署目录，便于确认单体和微服务两种启动方式读写的是同一份数据
+     */
+    @PostConstruct
+    public void printDataDirs() {
+        log.info("应用生成目录：{}；应用部署目录：{}（需与 nginx 挂载目录一致）",
+                AppConstant.CODE_OUTPUT_ROOT_DIR, getDeployRootDir());
+    }
 
     @Override
     public AppVO getAppVO(App app) {
@@ -254,7 +271,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
             sourceDir =  distDir;
         }
         // 8. 复制文件到部署路径
-        String deployDirPath = AppConstant.CODE_DEPLOY_ROOT_DIR + File.separator + deployKey;
+        String deployDirPath = getDeployRootDir() + File.separator + deployKey;
         try {
             FileUtil.copyContent(sourceDir, new File(deployDirPath), true);
         } catch (Exception e) {
@@ -267,11 +284,20 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         updateApp.setDeployedTime(LocalDateTime.now());
         boolean updateResult = this.updateById(updateApp);
         ThrowUtils.throwIf(!updateResult, ErrorCode.OPERATION_ERROR, "更新应用部署信息失败");
-        // 10. 返回可访问的 URL 地址
-        String appDeployUrl = String.format("%s/%s", deployHost, deployKey);
+        // 10. 返回可访问的 URL 地址（目录形式，nginx 直接返回 index.html）
+        String appDeployUrl = String.format("%s/%s/", deployHost, deployKey);
+        log.info("应用部署成功，deployKey: {}，部署目录: {}，访问地址: {}", deployKey, deployDirPath, appDeployUrl);
         // 11. 异步生成截图并更新应用封面
         generateAppScreenshot(appId, appDeployUrl);
         return appDeployUrl;
+    }
+
+    /**
+     * 获取应用部署根目录
+     * 微服务模式下应用服务的工作目录和 nginx 挂载目录不一定相同，因此优先读取 code.deploy-dir 配置
+     */
+    private String getDeployRootDir() {
+        return StrUtil.isBlank(deployDir) ? AppConstant.CODE_DEPLOY_ROOT_DIR : deployDir;
     }
 
     @Override
