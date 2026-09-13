@@ -31,6 +31,7 @@ import com.zy.webgenerator.service.AppService;
 import com.zy.webgenerator.service.ChatHistoryService;
 import com.zy.webgenerator.service.ScreenshotService;
 import com.zy.webgenerator.service.UserService;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,6 +79,15 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
 
     @Resource
     private AiCodeGenTypeRoutingServiceFactory aiCodeGenTypeRoutingServiceFactory;
+
+    /**
+     * 启动时打印生成目录和部署目录，便于确认单体和微服务两种启动方式读写的是同一份数据
+     */
+    @PostConstruct
+    public void printDataDirs() {
+        log.info("应用生成目录：{}；应用部署目录：{}（需与 nginx 挂载目录一致）",
+                AppConstant.CODE_OUTPUT_ROOT_DIR, AppConstant.CODE_DEPLOY_ROOT_DIR);
+    }
 
     @Override
     public AppVO getAppVO(App app) {
@@ -273,8 +283,9 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         updateApp.setDeployedTime(LocalDateTime.now());
         boolean updateResult = this.updateById(updateApp);
         ThrowUtils.throwIf(!updateResult, ErrorCode.OPERATION_ERROR, "更新应用部署信息失败");
-        // 10. 返回可访问的 URL 地址
-        String appDeployUrl = String.format("%s/%s", deployHost, deployKey);
+        // 10. 返回可访问的 URL 地址（目录形式，nginx 直接返回 index.html）
+        String appDeployUrl = String.format("%s/%s/", deployHost, deployKey);
+        log.info("应用部署成功，deployKey: {}，部署目录: {}，访问地址: {}", deployKey, deployDirPath, appDeployUrl);
         // 11. 异步生成截图并更新应用封面
         generateAppScreenshot(appId, appDeployUrl);
         return appDeployUrl;
