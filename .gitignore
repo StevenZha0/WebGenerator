@@ -8,9 +8,6 @@ target/
 application-local.yml
 tmp
 
-### macOS ###
-.DS_Store
-
 ### STS ###
 .apt_generated
 .classpath
